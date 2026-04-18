@@ -56,3 +56,6 @@ next-env.d.ts
 
 # IDE (local only; commit shared .vscode settings if your team relies on them)
 .idea/
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

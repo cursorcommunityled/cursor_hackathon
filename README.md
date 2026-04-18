@@ -1,85 +1,89 @@
 # CURSOR 48H
 
-**48-hour AI hackathon in Tashkent.** Intensive marathon of AI product development with mentorship and expert support.
+Open-source platform for running **48-hour AI hackathons**: landing site, registration, teams, screening, scoring, admin tools, and partner credits — built with **Next.js** and **PostgreSQL**.
 
-- **Site:** [cursor48.uz](https://cursor48.uz) (or `NEXT_PUBLIC_SITE_URL` in production)
-- **Stack:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Drizzle ORM, PostgreSQL, Better Auth
+---
+
+## Contents
+
+- [Features](#features)
+- [Stack](#stack)
+- [Quick start](#quick-start)
+- [Environment variables](#environment-variables)
+- [Database](#database)
+- [Scripts](#scripts)
+- [Docker & deployment](#docker--deployment)
+- [Project layout](#project-layout)
+- [References](#references)
 
 ---
 
 ## Features
 
-| Area | Description |
-|------|-------------|
-| **Landing** | Public homepage with hero, sponsors, prize fund, team building, selection process, schedule, evaluation criteria, requirements, tech stack. |
-| **Auth** | Email + Google/GitHub OAuth via [Better Auth](https://www.better-auth.com/). Optional 2FA for admins. Sign-up restricted to `SUPER_ADMIN_EMAILS` when using admin callback. |
-| **Registration / Onboarding** | User registration, onboarding flow, and completion status. |
-| **Teams** | Create/join/leave teams, transfer lead, manage members. Referral links for invites (`/r/[code]`). |
-| **Screening** | Screening phase with multiple-choice questions. Team demo video as a YouTube or Google Drive link. Submit answers, team status, phase control. Admin: approve/reject teams, manage questions. |
-| **Projects** | User projects and admin project management (CRUD). |
-| **Credits** | Super-admin credit pools: even split (teams or participants), Excel upload of per-user sponsor URLs, or one shared general link; redemption short codes and audit log. |
-| **Staff** | Staff invites, accept by token, teams to evaluate, evaluate team (scoring). |
-| **Ranking** | Public ranking from judge score averages (with optional late penalty); super admin can set a per-team final score override. |
-| **Admin** | Dashboard: users, teams, screening, questions, projects, partners, credits, staff. 2FA setup, security. Project deadline and other settings. |
-| **SEO** | Sitemap, robots, Open Graph, JSON-LD structured data, canonical URLs. |
+| Area | What it does |
+|------|----------------|
+| **Landing** | Hero, sponsors, prizes, schedule, criteria, requirements, tech stack, partnership page. |
+| **Auth** | Email + Google / GitHub via [Better Auth](https://www.better-auth.com/). Optional 2FA for admins. Admin sign-up can be limited with `SUPER_ADMIN_EMAILS`. |
+| **Registration & onboarding** | User flow and completion status. |
+| **Teams** | Create / join / leave, transfer lead, members. Invite links (`/r/[code]`). |
+| **Screening** | MC questions, optional team video (YouTube / Drive). Admins approve or reject teams and manage questions. |
+| **Projects** | Participant projects and admin CRUD. |
+| **Credits** | Super-admin pools: split by team or participant, Excel upload of per-user links, shared links, short codes, audit log. |
+| **Staff** | Invites, evaluation queue, team scoring. |
+| **Ranking** | Public ranking from judges; optional late penalty; admin can set final overrides. |
+| **Admin** | Users, teams, screening, projects, partners, credits, staff, settings (deadlines, etc.), security / 2FA. |
+| **SEO** | Sitemap, robots, Open Graph, JSON-LD, canonical URLs. |
 
 ---
 
-## Prerequisites
+## Stack
+
+- **Next.js 16** (App Router), **React 19**, **TypeScript**
+- **Tailwind CSS 4**, **Framer Motion**
+- **Drizzle ORM** + **PostgreSQL**
+- **Better Auth** (OAuth, sessions)
+
+Package scripts use **`npm`** in the included **Dockerfile**; locally you can use **Bun**, **pnpm**, or **yarn** if you prefer.
+
+---
+
+## Quick start
+
+### Prerequisites
 
 - **Node.js** 20+
-- **PostgreSQL** 16 (or use Docker)
-- **pnpm / npm / yarn / bun** (project uses `npm` in Docker)
+- **PostgreSQL** 16+ (or run Postgres via Docker)
 
----
-
-## Setup
-
-### 1. Clone and install
+### 1. Install
 
 ```bash
-git clone <repo-url>
-cd cursor-community-uz
+git clone <repository-url>
+cd <your-project-folder>
 npm install
 ```
 
-### 2. Environment variables
+### 2. Configure environment
 
-Create a `.env` file in the project root. Required and optional variables:
+Copy the example env file and edit values:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | Yes | PostgreSQL connection string, e.g. `postgresql://postgres:postgres@localhost:5432/cursor48` |
-| `BETTER_AUTH_SECRET` | Yes | Secret for Better Auth (use a long random string in production) |
-| `BETTER_AUTH_URL` | Yes | App URL for auth (e.g. `http://localhost:3000`; use HTTPS in production) |
-| `NEXT_PUBLIC_APP_URL` | Yes | Public app URL (e.g. `http://localhost:3000`) |
-| `SUPER_ADMIN_EMAILS` | Yes* | Comma-separated emails allowed to sign up as admin (when using admin callback) |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional | Google OAuth (create at [Google Cloud Console](https://console.cloud.google.com)) |
-| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional | GitHub OAuth (create at [GitHub Developer Settings](https://github.com/settings/developers)) |
-| `RESEND_API_KEY` | Optional | Resend for transactional email |
-| `NEXT_PUBLIC_SITE_URL` | Production | Canonical site URL (e.g. `https://cursor48.uz`) for metadata and sitemap |
+```bash
+cp .env.example .env
+```
 
-\* If `SUPER_ADMIN_EMAILS` is empty, email sign-up to admin is disabled.
+See [Environment variables](#environment-variables) below.
 
-### 3. Database (Docker)
+### 3. Database
 
-Start PostgreSQL:
+Start Postgres (example with Docker):
 
 ```bash
 docker compose up -d postgres
-```
-
-Then run migrations:
-
-```bash
 npm run db:migrate
 ```
 
-(Or use `drizzle-kit` with `DATABASE_URL` from `.env`.)
+### 4. Run
 
-### 4. Run the app
-
-**Development:**
+**Development**
 
 ```bash
 npm run dev
@@ -87,7 +91,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-**Production build:**
+**Production build (local)**
 
 ```bash
 npm run build
@@ -96,81 +100,90 @@ npm run start
 
 ---
 
-## Scripts
+## Environment variables
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start Next.js dev server |
-| `npm run build` | Production build (standalone output) |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run test` | Run Vitest once |
-| `npm run test:watch` | Run Vitest in watch mode |
-| `npm run db:generate` | Drizzle: generate migrations |
-| `npm run db:migrate` | Drizzle: run migrations |
-| `npm run db:studio` | Drizzle Studio (DB GUI) |
+Create a `.env` in the project root. Typical variables:
+
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `DATABASE_URL` | Yes | PostgreSQL URL, e.g. `postgresql://user:pass@localhost:5432/yourdb` |
+| `BETTER_AUTH_SECRET` | Yes | Long random string in production |
+| `BETTER_AUTH_URL` | Yes | App origin used by auth (e.g. `http://localhost:3000`; HTTPS in production) |
+| `NEXT_PUBLIC_APP_URL` | Yes | Public URL users see |
+| `SUPER_ADMIN_EMAILS` | See note | Comma-separated emails allowed for admin flows when configured |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Optional | [Google OAuth](https://console.cloud.google.com) |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Optional | [GitHub OAuth](https://github.com/settings/developers) |
+| `RESEND_API_KEY` | Optional | Transactional email (Resend) |
+| `NEXT_PUBLIC_SITE_URL` | Production | Canonical URL for metadata and sitemap (e.g. `https://your-domain.com`) |
+
+If `SUPER_ADMIN_EMAILS` is empty, restricted admin sign-up paths are effectively disabled.
 
 ---
 
-## Docker (full stack)
+## Database
 
-To run the full stack (Postgres + app) with Docker:
+- **Engine:** PostgreSQL  
+- **ORM:** Drizzle — schemas under `db/schema/`, migrations under `drizzle/`.  
+- **Generate migrations:** `npm run db:generate`  
+- **Apply migrations:** `npm run db:studio` (optional GUI) or `npm run db:migrate`
+
+**Docker image:** the production container runs migrations on startup (`scripts/start-with-migrate.mjs`), with retries via `DB_MIGRATION_ATTEMPTS` (default `20`) and `DB_MIGRATION_DELAY_MS` (default `3000`). If you deploy without this image, run `npm run db:migrate` in CI or before switching traffic.
+
+---
+
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Dev server |
+| `npm run build` | Production build (standalone) |
+| `npm run start` | Production server |
+| `npm run lint` | ESLint |
+| `npm run test` | Vitest (once) |
+| `npm run test:watch` | Vitest (watch) |
+| `npm run db:generate` | Generate Drizzle migrations |
+| `npm run db:migrate` | Run migrations |
+| `npm run db:studio` | Drizzle Studio |
+
+---
+
+## Docker & deployment
+
+### Full stack (Postgres + app)
 
 ```bash
-# Ensure .env exists and DATABASE_URL is set (compose overrides it for the app service)
 docker compose up -d
 ```
 
-- App in container listens on **port 3001** (mapped from host); Postgres on 5432.
-- The app image uses a startup script that runs migrations then starts the Next.js server.
+- App listens on **3001** inside the compose file (mapped to the host).  
+- Postgres is exposed on **5432** (adjust for your environment).  
+- Ensure `.env` exists; compose may override `DATABASE_URL` for the app service.
 
-For **Dokploy** deployments, use `docker-compose.dokploy.yml` instead of `docker-compose.yml`.
+### Production experience (Dokploy)
+
+This codebase has been **run in production using [Dokploy](https://dokploy.com)** (Docker-based deployments, reverse proxy, env management). For the same workflow, see `docker-compose.dokploy.yml` in this repo (instead of the default `docker-compose.yml` when Dokploy expects that layout).
+
+**You are not locked in:** deploy on any stack you like — plain Docker, Kubernetes, a VPS with `docker compose`, PaaS (Railway, Fly.io, etc.), or another panel. Use the included **Dockerfile** and your own `DATABASE_URL`, `BETTER_AUTH_URL`, and `NEXT_PUBLIC_*` values for that environment.
 
 ---
 
-## Project structure (overview)
+## Project layout
 
 ```
-├── app/                    # Next.js App Router
-│   ├── api/                # API routes (auth, admin, screening, teams, ranking, etc.)
-│   ├── admin/             # Admin dashboard and login
-│   ├── dashboard/         # User dashboard
-│   ├── register/          # Registration
-│   ├── onboarding/        # Onboarding flow
-│   ├── screening/         # Screening (participant)
-│   ├── ranking/           # Public ranking
-│   ├── staff/             # Staff evaluate / join
-│   ├── profile/           # User profile
-│   ├── partnership/       # Partnership page
-│   ├── r/[code]/          # Referral / invite by code
-│   ├── layout.tsx, page.tsx, globals.css
-│   ├── sitemap.ts, robots.ts
-│   └── opengraph-image.tsx
-├── components/            # React components (UI, participant sections, SEO)
-├── db/
-│   ├── schema/            # Drizzle schemas (auth, teams, partners, screening, scoring, projects, settings)
-│   ├── index.ts
-│   └── relations
-├── lib/                   # Auth, site config, screening, credits, scoring, teams, projects
+├── app/                 # Routes: marketing, dashboard, admin, API, auth, screening, ranking, staff…
+├── components/          # UI and feature sections
+├── db/                  # Drizzle client, schema, relations
+├── lib/                 # Auth helpers, domain logic (teams, screening, credits, scoring…)
 ├── drizzle.config.ts
-├── docker-compose.yml
 ├── Dockerfile
-└── scripts/               # e.g. start-with-migrate.mjs
+├── docker-compose.yml
+└── scripts/             # e.g. start-with-migrate.mjs
 ```
 
 ---
 
-## Database (Drizzle)
+## References
 
-- **Dialect:** PostgreSQL.
-- **Schemas:** Auth (user, session, account, team, etc.), teams (team, team_member), partners, screening (questions, answers, team video), scoring, projects, settings.
-- **Migrations:** Generated with `npm run db:generate`, applied with `npm run db:migrate`. Migrations live in `./drizzle`.
-- **Production (Docker image):** Migrations run **automatically** when the container starts — see `Dockerfile` (`CMD` → `scripts/start-with-migrate.mjs`), which runs `db:migrate` then `node server.js`. Retries are controlled with `DB_MIGRATION_ATTEMPTS` (default `20`) and `DB_MIGRATION_DELAY_MS` (default `3000`). If you deploy without this image (e.g. bare `next start`), run `npm run db:migrate` yourself or in your deploy pipeline before traffic hits the new version.
-
----
-
-## Learn more
-
-- [Next.js Documentation](https://nextjs.org/docs)
+- [Next.js](https://nextjs.org/docs)
 - [Better Auth](https://www.better-auth.com/)
 - [Drizzle ORM](https://orm.drizzle.team/)
