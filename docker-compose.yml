@@ -1,0 +1,52 @@
+# Local Docker Compose stack for development/testing.
+# For Dokploy deployments, use docker-compose.dokploy.yml instead.
+services:
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cursor48
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d cursor48"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - appnet
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "3001:3001"
+    expose:
+      - "3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+      # Use postgres service from this compose; overrides DATABASE_URL from .env.
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/cursor48
+      # This local stack expects services from this compose project and .env.
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - appnet
+    restart: unless-stopped
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  postgres_data:
