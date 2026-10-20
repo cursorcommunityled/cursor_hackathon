@@ -5,7 +5,8 @@ import { fileURLToPath } from "node:url";
 const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // Docker/Dokploy needs a standalone server. Vercel builds its own output.
+  ...(process.env.VERCEL ? {} : { output: "standalone" as const }),
   trailingSlash: false,
   turbopack: {
     root: projectRoot,

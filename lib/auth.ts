@@ -23,9 +23,25 @@ function isAdminCallbackUrl(value: unknown): boolean {
   return value === "/admin/dashboard" || value.startsWith("/admin/");
 }
 
+function getAuthBaseUrl(): string {
+  if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) {
+    const host = process.env.VERCEL_URL.replace(/^https?:\/\//, "");
+    return `https://${host}`;
+  }
+
+  return (
+    process.env.BETTER_AUTH_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "http://localhost:3000"
+  );
+}
+
+const authBaseUrl = getAuthBaseUrl();
+
 const trustedOrigins = Array.from(
   new Set(
     [
+      authBaseUrl,
       process.env.BETTER_AUTH_URL,
       process.env.NEXT_PUBLIC_APP_URL,
       "https://app.cursorcommunity.uz",
@@ -92,10 +108,7 @@ export const auth = betterAuth({
     },
   }),
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL:
-    process.env.BETTER_AUTH_URL ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000",
+  baseURL: authBaseUrl,
   basePath: "/api/auth",
   trustedOrigins,
   emailAndPassword: {

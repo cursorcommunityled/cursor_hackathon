@@ -12,7 +12,14 @@ import * as mentorSchema from "./schema/mentor";
 
 const connectionString =
   process.env.DATABASE_URL ?? "postgresql://localhost:5432/cursor48";
-const client = postgres(connectionString, { max: 10 });
+
+// postgres.js connects on the first query. On Vercel, one connection and no
+// prepared statements match Neon's pooled (PgBouncer transaction) URL.
+const onVercel = process.env.VERCEL === "1";
+const client = postgres(connectionString, {
+  max: onVercel ? 1 : 10,
+  prepare: !onVercel,
+});
 export const db = drizzle(client, {
   schema: {
     ...authSchema,
