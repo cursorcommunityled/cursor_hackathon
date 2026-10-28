@@ -19,7 +19,7 @@
   "dependencies": {
     "@hono/node-server": "^1.19.17",
     "@tanstack/react-table": "^8.21.3",
-    "better-auth": "^1.2.0",
+    "better-auth": "^1.7.7",
     "drizzle-orm": "^0.45.3",
     "framer-motion": "^12.29.0",
     "hono": "^4.13.12",
